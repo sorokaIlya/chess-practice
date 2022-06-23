@@ -1,10 +1,12 @@
 import React from 'react';
 import './App.css';
-
+import {BoardComponent} from "./components/BoardComponent";
 
 function App() {
     return (
-       <div>Hello </div>
+        <div className={'app'}>
+            <BoardComponent/>
+        </div>
     );
 }
 

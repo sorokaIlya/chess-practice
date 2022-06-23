@@ -8,11 +8,11 @@ export enum GameEnum{
     RESTART = 'restart'
 }
 
-export enum FigureType{
+export enum FigureTypeEnum{
     BISHOP,
     KING,
     ROOK,
     HORSE,
     PAWN,
-    
+    QUEEN
 }
