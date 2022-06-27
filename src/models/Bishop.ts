@@ -1,5 +1,6 @@
 import {Figure} from "./Figure";
 import {ChessEnum} from "./ChessEnum";
+import {Spot} from "./Spot";
 
 export class Bishop extends Figure{
 
@@ -8,9 +9,11 @@ export class Bishop extends Figure{
         super(color, pathFigure);
     }
 
-    canMove(): boolean {
-        return true;
+    canMove(currentSpot: Spot, possibleSpot: Spot) {
+        return false;
     }
+
+
 
     move(): void {
         return;

@@ -2,7 +2,7 @@ import React from 'react';
 import './App.css';
 import {BoardComponent} from "./components/BoardComponent";
 
-function App() {
+function Game() {
     return (
         <div className={'app'}>
             <BoardComponent/>
@@ -10,4 +10,4 @@ function App() {
     );
 }
 
-export default App;
+export default Game;

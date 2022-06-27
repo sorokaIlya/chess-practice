@@ -46,7 +46,13 @@
   border-radius: 50%;
   background-color: #22c022;
 }
-
+.aimed{
+  transition: all 200ms ease-in;
+  opacity: 0.8;
+}
+.aimed img{
+  transform: scale(0.7);
+}
 .lost {
   height: calc(50vh - 60px);
   padding: 30px;

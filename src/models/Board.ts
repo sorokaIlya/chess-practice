@@ -6,10 +6,11 @@ import {Bishop} from "./Bishop";
 import {Horse} from "./Horse";
 import {Queen} from "./Queen";
 import {King} from "./King";
-import {Figure} from "./Figure";
 
 export class Board {
+
     _cells: Spot[][];
+    selectedSpot:Spot|null = null;
 
     constructor() {
         this._cells = [];
@@ -17,6 +18,7 @@ export class Board {
     }
 
     private initDesk() {
+        console.log('init');
         this._cells[0] = [];
         this._cells[1] = [];
         this._cells[6] = [];
@@ -58,7 +60,29 @@ export class Board {
         return this._cells;
     }
 
-    selectFigure(figure:Figure){
-
+    public resetSteps() {
+        for (let i = 0; i < 8; i++) {
+            for (let j = 0; j < 8; j++) {
+                this._cells[i][j].setAvailable(false);
+            }
+        }
     }
+
+    selectFigure = (cell: Spot) => {
+        console.log({x: cell.x, y: cell.y});
+        if (cell.figure) {
+            for (let i = 0; i < 8; i++) {
+                for (let j = 0; j < 8; j++) {
+                    if (i == cell.x && j === cell.y) continue;
+                    if (this._cells[i][j].isAvailable) {
+                        this._cells[i][j] = this._cells[i][j].setAvailable(false);
+                    }
+                    if (cell.figure.canMove(cell, this._cells[i][j]))
+                        this._cells[i][j] = this._cells[i][j].setAvailable(true);
+                }
+            }
+            this.selectedSpot = cell;
+        }
+    }
+
 }

@@ -9,8 +9,9 @@ interface SpotI {
 }
 
 export class Spot {
+
     color: ChessEnum
-    figure: Figure | null;
+    private _figure: Figure | null;
     readonly x: number;
     readonly y: number;
     private _available: boolean;
@@ -20,12 +21,21 @@ export class Spot {
         this.x = spot.x;
         this.y = spot.y;
         this._available = false;
-        this.figure = spot.figure ?? null;
+        this._figure = spot.figure ?? null;
     }
 
 
-    setAvailable(value: boolean) {
+    setFigure(value: Figure | null) {
+        this._figure = value;
+    }
+
+    get figure(): Figure | null {
+        return this._figure;
+    }
+
+    public setAvailable(value: boolean):Spot {
         this._available = value;
+        return this
     }
 
     get isAvailable() {
