@@ -6,11 +6,13 @@ import {Bishop} from "./Bishop";
 import {Horse} from "./Horse";
 import {Queen} from "./Queen";
 import {King} from "./King";
+import {spotChoice} from "./Game";
+import {Player} from "./Player";
 
 export class Board {
 
-    _cells: Spot[][];
-    selectedSpot:Spot|null = null;
+    readonly _cells: Spot[][];
+    selectedSpot: Spot | null = null;
 
     constructor() {
         this._cells = [];
@@ -18,7 +20,7 @@ export class Board {
     }
 
     private initDesk() {
-        console.log('init');
+        console.log('init desk!');
         this._cells[0] = [];
         this._cells[1] = [];
         this._cells[6] = [];
@@ -51,7 +53,7 @@ export class Board {
             this._cells[i] = [];
             for (let j = 0; j < 8; j++) {
                 const cellColor = ((i + j) % 2 == 0) ? ChessEnum.WHITE : ChessEnum.BLACK
-                this._cells[i][j] = new Spot({x: i, y: j, color: cellColor})
+                this._cells[i][j] = new Spot({x: i, y: j, color: cellColor, figure: null})
             }
         }
     }
@@ -60,7 +62,7 @@ export class Board {
         return this._cells;
     }
 
-    public resetSteps() {
+    resetSteps() {
         for (let i = 0; i < 8; i++) {
             for (let j = 0; j < 8; j++) {
                 this._cells[i][j].setAvailable(false);
@@ -68,21 +70,100 @@ export class Board {
         }
     }
 
-    selectFigure = (cell: Spot) => {
-        console.log({x: cell.x, y: cell.y});
+
+    analyzeDesk(): spotChoice {
+        const spotsOption: spotChoice = {
+            isUnderMate: false,
+            isAvailable: false
+        }
+        for (let i = 0; i < 8; i++) {
+            for (let j = 0; j < 8; j++) {
+                this._cells[i][j].checkUnderMate() && (spotsOption.isUnderMate = true);
+                this._cells[i][j].isAvailable && (spotsOption.isAvailable = true);
+            }
+        }
+        return spotsOption;
+    }
+
+    revertSpots(next: Spot, prev: Spot) {
+        for (let i = 0; i < 8; i++) {
+            for (let j = 0; j < 8; j++) {
+                if (i === next.x && j === next.y) this._cells[i][j] = next;
+                if (i === prev.x && j === prev.y) this._cells[i][j] = prev;
+            }
+        }
+    }
+
+    analyzeMateBeforeMove(player: Player) {
+        if (!this.selectedSpot) return;
+        for (let i = 0; i < 8; i++) {
+            for (let j = 0; j < 8; j++) {
+                // mark all spots
+                if (this._cells[i][j].figure && player.playerColor != this._cells[i][j].figure?.color)
+                    this.selectFigure(this._cells[i][j])
+            }
+        }
+        this.resetSteps();
+        for (let i = 0; i < 8; i++)
+            for (let j = 0; j < 8; j++) {
+                if (this.selectedSpot.figure?.canMove(this.selectedSpot, this._cells[i][j])) {
+                    this._cells[i][j].isAvailable
+                }
+            }
+
+    }
+
+    selectFigure = (cell: Spot, declareMove = false) => {
         if (cell.figure) {
+            if (cell.figure instanceof Rook) {
+                cell.figure.setRookLines(cell.x, cell.y, this._cells);
+            }
+            if (cell.figure instanceof Bishop) {
+                cell.figure.setDiagonalSpots(cell.x, cell.y, this._cells);
+            }
+            if (cell.figure instanceof Queen) {
+                cell.figure.handleQueenMoves(cell.x, cell.y, this._cells);
+            }
+
             for (let i = 0; i < 8; i++) {
                 for (let j = 0; j < 8; j++) {
                     if (i == cell.x && j === cell.y) continue;
                     if (this._cells[i][j].isAvailable) {
-                        this._cells[i][j] = this._cells[i][j].setAvailable(false);
+                        this._cells[i][j].setAvailable(false);
                     }
-                    if (cell.figure.canMove(cell, this._cells[i][j]))
-                        this._cells[i][j] = this._cells[i][j].setAvailable(true);
+                    if (cell.figure.canMove(cell, this._cells[i][j])) {
+                        this._cells[i][j].setAvailable(true);
+                        if(declareMove){
+                            this._cells[i][j].setMate();
+                        }
+                    }
                 }
             }
             this.selectedSpot = cell;
         }
     }
 
+    moveFigure(next: Spot) {
+        if (next.isAvailable && this.selectedSpot) {
+            if (this.selectedSpot.figure instanceof Pawn) {
+                this.selectedSpot.figure.removeFirstDistance();
+                if (this.selectedSpot.figure.color === 'black' && next.x === 7) {
+                    next.setFigure(new Queen(this.selectedSpot.figure.color));
+                    this.selectedSpot.setFigure(null);
+                }
+                if (this.selectedSpot.figure.color === 'white' && next.x === 0) {
+                    next.setFigure(new Queen(this.selectedSpot.figure.color));
+                    this.selectedSpot.setFigure(null);
+                }
+            }
+            next.setFigure(this.selectedSpot.figure);
+            this.selectedSpot.setFigure(null);
+        }
+    }
+
+
+    checkMate(fromCell: Spot) {
+        this.selectFigure(fromCell, true);
+        return this.analyzeDesk();
+    }
 }

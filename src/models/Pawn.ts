@@ -15,8 +15,7 @@ export class Pawn extends Figure {
         const rangeStep = this.isFirstStep ? 2 : 1;
         const currentFigure = startSpot.figure;
         if (currentFigure) {
-            if (startSpot.figure?.color === possibleSpot.figure?.color) return false;
-            if (possibleSpot.figure?.color === currentFigure.color) return false;
+            if(possibleSpot.figure?.color == currentFigure.color) return false;
             if (possibleSpot.figure?.color === 'white') {
                 if (startSpot.x + 1 === possibleSpot.x && (startSpot.y - 1 === possibleSpot.y || startSpot.y + 1 === possibleSpot.y)) {
                     return true;
@@ -28,13 +27,13 @@ export class Pawn extends Figure {
                 }
             }
             if (currentFigure.color === 'white') {
-                if (possibleSpot.y === startSpot.y) {
+                if (possibleSpot.y === startSpot.y && !possibleSpot.figure) {
                     if ((startSpot.x - 1 === possibleSpot.x) || (startSpot.x - rangeStep === possibleSpot.x)) {
                         return true;
                     }
                 }
             } else if (currentFigure.color === 'black') {
-                if (possibleSpot.y === startSpot.y) {
+                if (possibleSpot.y === startSpot.y && !possibleSpot.figure) {
                     if ((startSpot.x + 1 === possibleSpot.x) || (startSpot.x + rangeStep === possibleSpot.x)) {
                         return true;
                     }
@@ -44,7 +43,7 @@ export class Pawn extends Figure {
         return false;
     }
 
-    trackMove() {
+    removeFirstDistance() {
         this.isFirstStep = false;
     }
 

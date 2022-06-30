@@ -3,53 +3,87 @@ import {ChessEnum} from "./ChessEnum";
 import {Spot} from "./Spot";
 
 export class Rook extends Figure {
+    private possibleMoves: Spot[] = [];
 
     constructor(color: ChessEnum) {
         const iconFigure = `${color}-rook`;
         super(color, iconFigure);
     }
 
-    private collectHorizontal = []
-    private collectVertical = []
-
-    handleVertical(x: number) {
-        if (x === 7) this.collectVertical = [];
+    private handleVerticalUp(x: number, y: number, cells: Spot[][]) {
+        x++;
+        while (x < 8) {
+            if (cells[x][y].figure && cells[x][y].figure?.color === this.color) {
+                break;
+            }
+            if (cells[x][y].figure) {
+                this.setPossibleMoves(cells[x][y]);
+                break;
+            }
+            this.setPossibleMoves(cells[x][y]);
+            x++;
+        }
     }
 
-    handleHorizontal(y: number) {
-        if (y === 7) this.collectHorizontal = [];
+    private handleVerticalDown(x: number, y: number, cells: Spot[][]) {
+        x--;
+        while (x > -1) {
+            if (cells[x][y].figure && cells[x][y].figure?.color === this.color) {
+                break;
+            }
+            if (cells[x][y].figure) {
+                this.setPossibleMoves(cells[x][y]);
+                break;
+            }
+            this.setPossibleMoves(cells[x][y]);
+            x--;
+        }
+    }
+
+    private handleHorizontalLeft(x: number, y: number, cells: Spot[][]) {
+        y--;
+        while (y > -1) {
+            if (cells[x][y].figure && cells[x][y].figure?.color === this.color) {
+                break;
+            }
+            if (cells[x][y].figure) {
+                this.setPossibleMoves(cells[x][y]);
+                break;
+            }
+            this.setPossibleMoves(cells[x][y]);
+            y--;
+        }
+    }
+
+    private handleHorizontalRight(x: number, y: number, cells: Spot[][]) {
+        y++;
+        while (y < 8) {
+            if (cells[x][y].figure?.color === this.color) {
+                break;
+            }
+            if (cells[x][y].figure) {
+                this.setPossibleMoves(cells[x][y]);
+                break;
+            }
+            this.setPossibleMoves(cells[x][y]);
+            y++;
+        }
+    }
+
+    private setPossibleMoves(spot: Spot) {
+        this.possibleMoves.push(spot);
+    }
+
+    setRookLines(x: number, y: number, cells: Spot[][]) {
+        this.possibleMoves = [];
+        this.handleHorizontalRight(x, y, cells);
+        this.handleHorizontalLeft(x, y, cells);
+        this.handleVerticalDown(x, y, cells);
+        this.handleVerticalUp(x, y, cells);
     }
 
     canMove(startSpot: Spot, possibleSpot: Spot) {
-        const currentFigure = startSpot.figure;
-        if (currentFigure) {
-            if (startSpot.figure?.color === possibleSpot.figure?.color) return false;
-            if (possibleSpot.figure?.color === currentFigure.color) return false;
-            if (possibleSpot.figure?.color === 'white') {
-                if (startSpot.x + 1 === possibleSpot.x && (startSpot.y - 1 === possibleSpot.y || startSpot.y + 1 === possibleSpot.y)) {
-                    return true;
-                }
-            }
-            if (possibleSpot.figure?.color === 'black') {
-                if (startSpot.x - 1 === possibleSpot.x && (startSpot.y - 1 === possibleSpot.y || startSpot.y + 1 === possibleSpot.y)) {
-                    return true;
-                }
-            }
-            if (currentFigure.color === 'white') {
-                if (possibleSpot.y === startSpot.y) {
-                    if (startSpot.x - 1 === possibleSpot.x) {
-                        return true;
-                    }
-                }
-            } else if (currentFigure.color === 'black') {
-                if (possibleSpot.y === startSpot.y) {
-                    if (startSpot.x + 1 === possibleSpot.x) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
+        return !!this.possibleMoves.find(cell => cell.x === possibleSpot.x && cell.y === possibleSpot.y);
     }
 
 }

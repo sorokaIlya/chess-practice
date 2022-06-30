@@ -2,13 +2,18 @@ import {Player} from "./Player";
 import {Board} from "./Board";
 import {ChessEnum} from "./ChessEnum";
 import {Spot} from "./Spot";
-import {Table} from "./Table";
 import {Figure} from "./Figure";
+import {HistoryChess} from "./HistoryChess";
 
-enum StatusGame {
-    START = 'start',
-    CHECKMATE = 'checkmate',
-    MATE = 'mate'
+export enum StatusGame {
+    GAME = 'game',
+    MATE = 'mate',
+    ENDGAME = 'endgame',
+}
+
+export type spotChoice = {
+    isAvailable: boolean;
+    isUnderMate: boolean;
 }
 
 export class Game {
@@ -16,18 +21,25 @@ export class Game {
     black: Player;
     chessBoard: Board;
     activePlayer: Player;
-    table: Table
+    history: HistoryChess;
+    status: StatusGame = StatusGame.GAME;
 
     constructor() {
         this.white = new Player(ChessEnum.WHITE);
         this.black = new Player(ChessEnum.BLACK);
         this.activePlayer = this.white
         this.chessBoard = new Board();
-        this.table = new Table();
+        this.history = new HistoryChess(this.chessBoard)
     }
 
-    private isPlayerTurn(figure: Figure) {
+    public isPlayerTurn(figure: Figure) {
         return this.activePlayer.playerColor === figure.color;
+    }
+
+    backProgress() {
+        this.history.rollback();
+        this.chessBoard.resetSteps();
+        this.changePlayer();
     }
 
     private changePlayer() {
@@ -36,20 +48,50 @@ export class Game {
         else this.activePlayer = this.black;
     }
 
-    public moveFigure(next: Spot) {
-        const start = this.chessBoard.selectedSpot;
-        if (start && start.figure && this.isPlayerTurn(start.figure)) {
-            if (next.isAvailable) {
-                if (next.figure) {
-                    this.table.addBeatenFigure(next.figure, this.activePlayer);
-                }
-                next.setFigure(start.figure);
-                start.setFigure(null);
-                this.changePlayer();
-            }
-            this.chessBoard.resetSteps();
+    private moveFigure(next: Spot) {
+        if (this.chessBoard.selectedSpot) {
+            this.history.writeHistory(next, this.chessBoard.selectedSpot); // update table
         }
+        this.chessBoard.moveFigure(next)
+        this.changePlayer();
+
+        const {isAvailable, isUnderMate} = this.chessBoard.checkMate(next);
+        if (isUnderMate) this.status = StatusGame.MATE;
+        if (!isAvailable && isUnderMate) this.status = StatusGame.ENDGAME;
+        if (!isUnderMate) this.status = StatusGame.GAME;
+
+        this.chessBoard.resetSteps();
+
     }
 
+    private moveFigureOnMate(next: Spot) {
+        if (this.chessBoard.selectedSpot) {
+            this.history.writeHistory(next, this.chessBoard.selectedSpot); // update table
+        }
+        this.chessBoard.moveFigure(next)
+        this.changePlayer();
+        this.chessBoard.checkMate(next);
+
+        this.chessBoard.resetSteps();
+
+    }
+
+    resolveGame(next: Spot) {
+        switch (this.status) {
+            case StatusGame.ENDGAME:
+                alert(`END GAME`);
+                this.chessBoard.resetSteps();
+                break;
+            case StatusGame.GAME:
+                this.moveFigure(next);
+                break;
+            case StatusGame.MATE:
+                alert('Mate!')
+
+                break;
+            default:
+                this.moveFigure(next)
+        }
+    }
 
 }

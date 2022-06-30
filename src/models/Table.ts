@@ -6,7 +6,7 @@ import {Bishop} from "./Bishop";
 import {Queen} from "./Queen";
 import {Player} from "./Player";
 
-interface FigureDesk {
+export interface FigureDesk {
     figure: Figure,
     score: number
 }

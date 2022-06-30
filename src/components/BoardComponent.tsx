@@ -5,35 +5,41 @@ import {Game} from "../models/Game";
 
 export const BoardComponent = () => {
 
-    const {board, game} = useMemo(() => {
+    const {chessBoard: board, game} = useMemo(() => {
         const game = new Game();
-        const board = game.chessBoard;
-        return {board, game};
+        const {chessBoard} = game;
+        return {chessBoard, game};
     }, []);
 
-    const [, setSpot] = useState<Spot | null>(null);
-    // const selectMemo = useCallback((spot:Spot)=>{
-    //     console.log({x:spot.x,y:spot.y})
-    // },[])
+    const [spot, setSpot] = useState<object | null>(null);
 
-    const selectFigure = (cell: Spot) => {
-        board.selectFigure(cell)
-        setSpot(cell);
-    }
+    const selectFigure = useCallback((cell: Spot) => {
+        if (cell.figure && game.isPlayerTurn(cell.figure)) {
+            board.selectFigure(cell)
+            setSpot(cell);
+        }
+    }, []);
 
-    const moveFigure = (next: Spot) => {
-        game.moveFigure(next);
+    const moveFigure = useCallback((next: Spot) => {
+        game.resolveGame(next);
         setSpot(next);
+    }, []);
+
+    const handleBackMove = () => {
+        game.backProgress();
+        setSpot({...spot});
     }
 
     return (
         <div className={'board'}>
+            <button className="prev-move" onClick={handleBackMove}>Back</button>
             {board.getSells.map((cellRow, ind) =>
                 <React.Fragment key={ind}>
                     {cellRow.map(cell =>
-                        <CellComponent key={`${cell.x}-${cell.y}`} cell={cell} pasteFigure={moveFigure}
-                                       onSelect={selectFigure}/>)
-                    }
+                        <CellComponent key={`${cell.x}-${cell.y}`} cell={cell}
+                                       pasteFigure={moveFigure}
+                                       onSelect={selectFigure}/>
+                    )}
                 </React.Fragment>)
             }
         </div>

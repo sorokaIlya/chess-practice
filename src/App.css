@@ -29,6 +29,16 @@
   height: 48px;
   position: relative;
   cursor: pointer;
+  filter: drop-shadow(2px 4px 6px black);
+}
+.prev-move{
+  position: absolute;
+  inset: 1rem 1rem 1rem 2rem;
+  height: 30px;
+  width: 50px;
+}
+.mate{
+  filter: contrast(0.1);
 }
 .black {
   background-color: deepskyblue;
